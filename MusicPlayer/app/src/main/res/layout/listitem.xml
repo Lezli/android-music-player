@@ -30,6 +30,11 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:elipsize="end"
+            android:gravity="right"
+            android:singleLine="true"
+            android:textSize="15dip"
+
 
             />
     </LinearLayout>

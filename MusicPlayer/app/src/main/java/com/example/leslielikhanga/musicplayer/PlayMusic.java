@@ -41,9 +41,9 @@ public class PlayMusic extends ListActivity {
     private ImageButton nextButton = null;
 
     private boolean isStarted = true;
-    private String currentFile = " " ;
+    private String currentFile = " ";
     private boolean isMovingSeekBar = false;
-    private final Handler handler = new Handler ();
+    private final Handler handler = new Handler();
     private final Runnable updatePositionRunnable = new Runnable() {
 
         public void run() {
@@ -53,7 +53,6 @@ public class PlayMusic extends ListActivity {
 
 
     };
-
 
 
     @Override
@@ -67,19 +66,19 @@ public class PlayMusic extends ListActivity {
         prevButton = (ImageButton) findViewById(R.id.prev);
         nextButton = (ImageButton) findViewById(R.id.next);
         player = new MediaPlayer();
-      //  MediaPlayer.OnCompletionListener onCompletion = null;
+        //  MediaPlayer.OnCompletionListener onCompletion = null;
         player.setOnCompletionListener(onCompletion);
         //MediaPlayer.OnErrorListener onError = null;
         player.setOnErrorListener(onError);
         //SeekBar.OnSeekBarChangeListener seekBarChanged =null;
         seekbar.setOnSeekBarChangeListener(seekBarChanged);
 
-        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null , null, null, null);
+        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null, null);
 
-        if (null != cursor){
+        if (null != cursor) {
 
             cursor.moveToFirst();
-            mediaAdapter = new MediaCursorAdapter(this, R.layout.listitem, cursor );
+            mediaAdapter = new MediaCursorAdapter(this, R.layout.listitem, cursor);
             setListAdapter(mediaAdapter);
 
 
@@ -88,31 +87,32 @@ public class PlayMusic extends ListActivity {
             playButton.setOnClickListener(onButtonClick);
 
 
-            }
         }
-@Override
-protected void onListItemClick(ListView list, View view , int position, long id){
-        super.onListItemClick(list, view ,position, id);
+    }
+
+    @Override
+    protected void onListItemClick(ListView list, View view, int position, long id) {
+        super.onListItemClick(list, view, position, id);
         currentFile = (String) view.getTag();
         startPlay(currentFile);
 
     }
 
 
-@Override
-    protected void onDestroy(){
-    super.onDestroy();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-    handler.removeCallbacks(updatePositionRunnable);
-    player.stop();
-    player.reset();
-    player.release();
+        handler.removeCallbacks(updatePositionRunnable);
+        player.stop();
+        player.reset();
+        player.release();
 
-    player = null;
+        player = null;
 
-}
+    }
 
-    private void startPlay(String file){
+    private void startPlay(String file) {
         Log.i("Selected:", file);
 
         selectedFile.setText(file);
@@ -121,18 +121,18 @@ protected void onListItemClick(ListView list, View view , int position, long id)
         player.reset();
 
         try {
-              player.setDataSource(file);
-              player.prepare();
-        }catch (IllegalArgumentException e) {
-             e.printStackTrace();
+            player.setDataSource(file);
+            player.prepare();
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
 
-        }catch (IllegalStateException e) {
+        } catch (IllegalStateException e) {
             e.printStackTrace();
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-      seekbar.setMax(player.getDuration());
+        seekbar.setMax(player.getDuration());
         playButton.setImageResource(android.R.drawable.ic_media_pause);
 
         updatePosition();
@@ -141,123 +141,125 @@ protected void onListItemClick(ListView list, View view , int position, long id)
 
     }
 
-private void stopPlay() {
-    player.stop();
-    player.reset();
-    playButton.setImageResource(android.R.drawable.ic_media_play);
-    handler.removeCallbacks(updatePositionRunnable);
-    seekbar.setProgress(0);
-    isStarted = false;
-}
-
-    private void updatePosition(){
-
-     handler.removeCallbacks(updatePositionRunnable);
-     seekbar.setProgress(player.getCurrentPosition());
-     handler.postDelayed(updatePositionRunnable , UPDATE_FREQUENCY);
+    private void stopPlay() {
+        player.stop();
+        player.reset();
+        playButton.setImageResource(android.R.drawable.ic_media_play);
+        handler.removeCallbacks(updatePositionRunnable);
+        seekbar.setProgress(0);
+        isStarted = false;
     }
 
-    private class MediaCursorAdapter extends SimpleCursorAdapter{
+    private void updatePosition() {
 
-        public MediaCursorAdapter(Context context, int layout, Cursor c){
-            super(context,layout,c , new String[]{MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.TITLE, MediaStore.Audio.AudioColumns.DURATION}
-,new int[]{R.id.displayname, R.id.title, R.id.duration}
+        handler.removeCallbacks(updatePositionRunnable);
+        seekbar.setProgress(player.getCurrentPosition());
+        handler.postDelayed(updatePositionRunnable, UPDATE_FREQUENCY);
+    }
+
+    private class MediaCursorAdapter extends SimpleCursorAdapter {
+
+        public MediaCursorAdapter(Context context, int layout, Cursor c) {
+            super(context, layout, c, new String[]{MediaStore.MediaColumns.DISPLAY_NAME, MediaStore.MediaColumns.TITLE, MediaStore.Audio.AudioColumns.DURATION}
+                    , new int[]{R.id.displayname, R.id.title, R.id.duration}
             );
         }
-@Override
-       public  void bindView(View view, Context context , Cursor cursor){
-         TextView title = (TextView) view.findViewById(R.id.title);
-         TextView name = (TextView) view.findViewById(R.id.displayname);
-         TextView duration = (TextView) view.findViewById(R.id.duration);
-    name.setText(cursor.getString(
-            cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
-    ));
-    title.setText(cursor.getString(
-            cursor.getColumnIndex(MediaStore.MediaColumns.TITLE)
-    ));
 
-    long durationInMs = Long.parseLong(cursor.getString(
-              cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION)
-    ));
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+            TextView title = (TextView) view.findViewById(R.id.title);
+            TextView name = (TextView) view.findViewById(R.id.displayname);
+            TextView duration = (TextView) view.findViewById(R.id.duration);
+            name.setText(cursor.getString(
+                    cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME)
+            ));
+            title.setText(cursor.getString(
+                    cursor.getColumnIndex(MediaStore.MediaColumns.TITLE)
+            ));
 
-    double durationInMin = ((double) durationInMs / 1000.0 / 60.0);
-    durationInMin = new BigDecimal(Double.toString(durationInMin)).setScale(2, BigDecimal.ROUND_UP).doubleValue();
-    duration.setText(""+ durationInMin);
-    view.setTag(cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA)));
+            long durationInMs = Long.parseLong(cursor.getString(
+                    cursor.getColumnIndex(MediaStore.Audio.AudioColumns.DURATION)
+            ));
 
-}
-@Override
-        public View newView(Context context, Cursor cursor, ViewGroup parent){
-    LayoutInflater inflater = LayoutInflater.from(context);
-    View v =inflater.inflate(R.layout.listitem, parent, false);
+            double durationInMin = ((double) durationInMs / 1000.0 / 60.0);
+            durationInMin = new BigDecimal(Double.toString(durationInMin)).setScale(2, BigDecimal.ROUND_UP).doubleValue();
+            duration.setText("" + durationInMin);
+            view.setTag(cursor.getString(cursor.getColumnIndex(MediaStore.MediaColumns.DATA)));
 
-    bindView(v, context, cursor );
-    return v;
+        }
 
-}
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            LayoutInflater inflater = LayoutInflater.from(context);
+            View v = inflater.inflate(R.layout.listitem, parent, false);
+
+            bindView(v, context, cursor);
+            return v;
+
+        }
     }
 
-  private View.OnClickListener onButtonClick = new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-          switch (v.getId()){
-            case R.id.play: {
-                     if (player.isPlaying()) {
-                      handler.removeCallbacks(updatePositionRunnable);
-                      player.pause();
-                      playButton.setImageResource(android.R.drawable.ic_media_play);
+    private View.OnClickListener onButtonClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            switch (v.getId()) {
+                case R.id.play: {
+                    if (player.isPlaying()) {
+                        handler.removeCallbacks(updatePositionRunnable);
+                        player.pause();
+                        playButton.setImageResource(android.R.drawable.ic_media_play);
                     } else {
                         if (isStarted) {
                             player.start();
                             ;
                             playButton.setImageResource(android.R.drawable.ic_media_pause);
                             updatePosition();
-                           }else {
+                        } else {
                             startPlay(currentFile);
-                             }
-                         }
-            break;
-              }
-            case R.id.next: {
-                   int seekto = player.getCurrentPosition() + STEP_VALUE;
-                      if(seekto > player.getDuration())
-                          seekto = player.getDuration();
+                        }
+                    }
+                    break;
+                }
+                case R.id.next: {
+                    int seekto = player.getCurrentPosition() + STEP_VALUE;
+                    if (seekto > player.getDuration())
+                        seekto = player.getDuration();
 
 
-                       player.pause();
-                       player.seekTo(seekto);
-                       player.start();
+                    player.pause();
+                    player.seekTo(seekto);
+                    player.start();
 
-                break;
+                    break;
+                }
+                case R.id.prev: {
+                    int seekto = player.getCurrentPosition() + STEP_VALUE;
+                    if (seekto > 0)
+                        seekto = 0;
+
+                    player.pause();
+                    player.seekTo(seekto);
+                    player.start();
+
+                    break;
+
+                }
             }
-              case R.id.prev: {
-                  int seekto = player.getCurrentPosition() + STEP_VALUE;
-                       if ( seekto > 0)
-                             seekto = 0;
-
-                       player.pause();
-                       player.seekTo(seekto);
-                       player.start();
-
-                  break;
-
-              }
-          }
-      }
-  };
+        }
+    };
 
     private MediaPlayer.OnCompletionListener onCompletion = new MediaPlayer.OnCompletionListener() {
 
         @Override
-    public void onCompletion(MediaPlayer mp) {
-             stopPlay();
+        public void onCompletion(MediaPlayer mp) {
+            stopPlay();
         }
     };
 
-    private MediaPlayer.OnErrorListener onError = new MediaPlayer.OnErrorListener(){
+    private MediaPlayer.OnErrorListener onError = new MediaPlayer.OnErrorListener() {
 
         @Override
-     public boolean onError(MediaPlayer mp, int val1 , int val2){
+        public boolean onError(MediaPlayer mp, int val1, int val2) {
 
 
             return false;
@@ -267,22 +269,24 @@ private void stopPlay() {
     };
 
     private SeekBar.OnSeekBarChangeListener seekBarChanged = new SeekBar.OnSeekBarChangeListener() {
-      @Override
-   public void onStopTrackingTouch (SeekBar seekBar){
-          isMovingSeekBar = false;
-      }
         @Override
-    public void onStartTrackingTouch(SeekBar seekBar){
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            isMovingSeekBar = false;
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
             isMovingSeekBar = true;
         }
+
         @Override
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
-           if (isMovingSeekBar){
-               player.seekTo(progress);
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            if (isMovingSeekBar) {
+                player.seekTo(progress);
 
-               Log.i("OnSeekBarChangeListener", " onProgressChanged");
+                Log.i("OnSeekBarChangeListener", " onProgressChanged");
 
-           }
+            }
         }
     };
 }
